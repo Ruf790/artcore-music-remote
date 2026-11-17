@@ -53,14 +53,14 @@ class Remote(private val context: Context) {
 
     private var pending: Beacon? = null              // pairing with this PC right now
 
-    private val link = Link(scope, ::onMessage, ::onLink)
+    private val conn = Link(scope, ::onMessage, ::onLink)
 
     init {
         discovery.onBeacon = { b ->
             val saved = store.pc
             if (saved != null && b.id.isNotEmpty() && b.id == saved.id && (b.host != saved.host || b.port != saved.port)) {
                 store.pc = saved.copy(host = b.host, port = b.port, name = b.name)
-                link.moveTo(b.host, b.port)
+                conn.moveTo(b.host, b.port)
             }
         }
     }
@@ -74,23 +74,23 @@ class Remote(private val context: Context) {
     // ── connecting
     fun connectSaved() {
         val pc = store.pc ?: return
-        if (link.state is LinkState.Online || link.state is LinkState.Connecting) return
+        if (conn.state is LinkState.Online || conn.state is LinkState.Connecting) return
         _pcName.value = pc.name
-        link.connect(Target(pc.host, pc.port, deviceName, store.deviceId, token = pc.token))
+        conn.connect(Target(pc.host, pc.port, deviceName, store.deviceId, token = pc.token))
     }
 
     /** The first time: the 4-digit code from ArtCore Music → Settings → Remote. */
     fun pair(b: Beacon, code: String) {
         pending = b
         _pcName.value = b.name
-        link.connect(Target(b.host, b.port, deviceName, store.deviceId, code = code.trim()))
+        conn.connect(Target(b.host, b.port, deviceName, store.deviceId, code = code.trim()))
     }
 
-    fun retryNow() = link.retryNow()
+    fun retryNow() = conn.retryNow()
 
     /** Menu → Disconnect: forget the PC on this phone. */
     fun forget() {
-        link.disconnect()
+        conn.disconnect()
         store.pc = null
         pending = null
         _playlists.value = Playlists()
@@ -161,7 +161,7 @@ class Remote(private val context: Context) {
         val key = "$id@$size"
         covers[key]?.let { return it }
         if (size < 512) covers["$id@512"]?.let { return it }     // a bigger one will do for a thumbnail
-        if (link.state is LinkState.Online && asked.add(key)) link.send(Protocol.getCover(id, size))
+        if (conn.state is LinkState.Online && asked.add(key)) conn.send(Protocol.getCover(id, size))
         return null
     }
 
@@ -169,7 +169,7 @@ class Remote(private val context: Context) {
 
     // ── the buttons
     private fun send(text: String) {
-        if (!link.send(text)) link.retryNow()
+        if (!conn.send(text)) conn.retryNow()
     }
 
     fun play(playlist: Int, track: Long) = send(Protocol.play(playlist, track))
