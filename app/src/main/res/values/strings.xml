@@ -44,6 +44,7 @@
     <string name="up_next">Up next: %s</string>
     <string name="live">Live broadcast…</string>
     <string name="to_playing">Go to the playing track</string>
+    <string name="exit">Exit</string>
     <string name="live_short">Live</string>
     <string name="nothing_playing">Nothing is playing</string>
     <string name="empty_playlist">This playlist is empty</string>

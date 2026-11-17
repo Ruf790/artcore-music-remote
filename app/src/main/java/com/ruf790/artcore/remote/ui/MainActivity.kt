@@ -217,9 +217,14 @@ class MainActivity : ComponentActivity() {
         val covers = Covers { id, size -> r.cover(id, size)?.let { bitmapCache(it) } }
         val actions = remember { RemoteActions(r) }
         val openMenu: () -> Unit = { scope.launch { drawer.open() } }
+        val exit: () -> Unit = {
+            r.quit()
+            finishAndRemoveTask()
+        }
         val more = listOf(
             stringResource(R.string.choose_pc) to { page = Page.CONNECT },
             stringResource(R.string.settings) to { settings = true },
+            stringResource(R.string.exit) to exit,
         )
 
         ModalNavigationDrawer(drawerState = drawer, drawerContent = {
@@ -231,7 +236,7 @@ class MainActivity : ComponentActivity() {
                 page = Page.CONNECT; scope.launch { drawer.close() }
             }, onSettings = {
                 settings = true; scope.launch { drawer.close() }
-            })
+            }, onExit = exit)
         }) {
             when (page) {
                 Page.CONNECT -> ConnectScreen(
@@ -280,9 +285,10 @@ private class RemoteActions(private val r: Remote) : Actions {
     override fun retry() = r.retryNow()
 }
 
-/** ☰: the playlists, the radio, choosing the PC, the settings. */
+/** ☰: the playlists, the radio, choosing the PC, the settings, exit. */
 @Composable
-fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, onPc: () -> Unit, onSettings: () -> Unit) {
+fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, onPc: () -> Unit, onSettings: () -> Unit,
+               onExit: () -> Unit) {
     val p = LocalPalette.current
     ModalDrawerSheet(drawerContainerColor = p.bg) {
         Column(Modifier.fillMaxWidth().background(p.red).padding(start = 20.dp, end = 20.dp, top = 36.dp, bottom = 18.dp)) {
@@ -304,6 +310,8 @@ fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, o
             HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
             MenuRow(R.drawable.ic_computer, stringResource(R.string.choose_pc), model.pcName) { onPc() }
             MenuRow(R.drawable.ic_tune, stringResource(R.string.settings), "") { onSettings() }
+            HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
+            MenuRow(R.drawable.ic_close, stringResource(R.string.exit), "") { onExit() }
         }
     }
 }
