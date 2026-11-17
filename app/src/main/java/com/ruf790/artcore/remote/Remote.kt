@@ -88,6 +88,14 @@ class Remote(private val context: Context) {
 
     fun retryNow() = conn.retryNow()
 
+    /** 1.0.2: Menu → Exit — close the connection and the notification; the PC stays paired (next start connects). */
+    fun quit() {
+        conn.disconnect()
+        discovery.stop()
+        asked.clear()
+        RemoteService.stop(context)
+    }
+
     /** Menu → Disconnect: forget the PC on this phone. */
     fun forget() {
         conn.disconnect()
