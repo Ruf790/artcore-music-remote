@@ -206,15 +206,17 @@ fun DeskMode(
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { controls = !controls },
     ) {
         BoxWithConstraints(Modifier.fillMaxSize().offset(shift.dp, shift.dp).padding(32.dp)) {
-            if (maxWidth > maxHeight) {
+            val boxW = maxWidth        // inside Row / Column the receiver of maxWidth is not reachable
+            val boxH = maxHeight
+            if (boxW > boxH) {
                 Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                    DeskCover(img, t?.stream == true, maxHeight)
+                    DeskCover(img, t?.stream == true, boxH)
                     Spacer(Modifier.width(56.dp))
                     DeskTexts(clock, date, title, sub, accentNow, 104.sp, false, Modifier.weight(1f))
                 }
             } else {
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    DeskCover(img, t?.stream == true, minOf(maxWidth, maxHeight * 0.5f))
+                    DeskCover(img, t?.stream == true, minOf(boxW, boxH * 0.5f))
                     Spacer(Modifier.height(32.dp))
                     DeskTexts(clock, date, title, sub, accentNow, 72.sp, true, Modifier.fillMaxWidth())
                 }
