@@ -105,6 +105,7 @@ fun TracksScreen(
     onMenu: () -> Unit,
     onOpenNow: () -> Unit,
     overflow: List<Pair<String, () -> Unit>>,
+    showMini: Boolean = true,      // false next to the "Now playing" pane on wide screens
 ) {
     val p = LocalPalette.current
     val st = model.state
@@ -200,7 +201,7 @@ fun TracksScreen(
                 }
             }
         }
-        MiniPlayer(model, covers, position, actions, onOpenNow)
+        if (showMini) MiniPlayer(model, covers, position, actions, onOpenNow)
         Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars).background(p.bg))
     }
 }

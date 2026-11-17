@@ -18,6 +18,7 @@
 - Экран **Сейчас играет**: большая обложка, формат (FLAC · 24 bit · 96 kHz), перемотка, случайный порядок, ⏮ ⏹ ⏯ ⏭, повтор, «Далее: …».
 - Меню ☰: плейлисты, радио, выбор ПК, настройки (тема светлая / тёмная, язык, отключиться).
 - Уведомление и экран блокировки с ⏮ ⏯ ⏹ ⏭ и обложкой, пока музыка играет; кнопки громкости телефона меняют громкость ArtCore Music, когда приложение открыто.
+- Планшеты и широкие экраны: треки слева, «Сейчас играет» справа.
 - Русский и английский — по языку телефона (или выбрать в настройках).
 - Только локальная сеть: ArtCore Music пускает телефоны из 192.168.*, 10.*, 172.16–31.*, по коду и личному токену.
 
@@ -35,7 +36,7 @@ An Android remote for ArtCore Music: every playlist and album of the PC on the p
 
 **Connecting:** turn the remote on in ArtCore Music 1.8.0+ (Settings → Remote), open the app on the same Wi-Fi — the PC shows up by itself — enter the 4-digit code once. After that the phone connects (and reconnects) by itself. ⋮ → *Enter the address by hand* if the network blocks broadcasts.
 
-Media notification and lock-screen controls while music plays, phone volume keys control ArtCore Music while the app is open, light and dark theme, Russian and English. Local network only; pairing code plus a per-phone token.
+Tablets and wide screens: the tracks on the left, the player on the right. Media notification and lock-screen controls while music plays, phone volume keys control ArtCore Music while the app is open, light and dark theme, Russian and English. Local network only; pairing code plus a per-phone token.
 
 Build: `./gradlew assembleRelease`; tests: `./gradlew testDebugUnitTest`. CI builds the APK, attaches it to published releases and takes emulator screenshots.
 

@@ -18,7 +18,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -187,6 +192,9 @@ class MainActivity : ComponentActivity() {
         var query by remember { mutableStateOf("") }
         var focusSearch by remember { mutableStateOf(false) }
         var settings by remember { mutableStateOf(false) }
+        // tablets, unfolded foldables: the tracks and the player side by side (Material "expanded" width)
+        val wide = LocalConfiguration.current.screenWidthDp >= 840
+        val pal = LocalPalette.current
         var about by remember { mutableStateOf(false) }
         val drawer = rememberDrawerState(DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -213,7 +221,7 @@ class MainActivity : ComponentActivity() {
                 tab = playlists.playing.takeIf { p -> playlists.items.any { it.id == p } } ?: playlists.items.firstOrNull()?.id ?: 0
             }
         }
-        BackHandler(enabled = page == Page.NOW || drawer.isOpen) {
+        BackHandler(enabled = (page == Page.NOW && !wide) || drawer.isOpen) {
             if (drawer.isOpen) scope.launch { drawer.close() } else page = Page.TRACKS
         }
 
@@ -244,7 +252,21 @@ class MainActivity : ComponentActivity() {
                 about = true; scope.launch { drawer.close() }
             }, onExit = exit)
         }) {
-            when (page) {
+            if (wide && page != Page.CONNECT) {
+                Row(Modifier.fillMaxSize()) {
+                    Box(Modifier.weight(0.42f).fillMaxHeight()) {
+                        TracksScreen(
+                            model, covers, r::position, actions, tab, { tab = it }, query, { query = it; focusSearch = false },
+                            focusSearch, openMenu, {}, more, showMini = false,
+                        )
+                    }
+                    Spacer(Modifier.width(1.dp).fillMaxHeight().background(pal.line))
+                    Box(Modifier.weight(0.58f).fillMaxHeight()) {
+                        NowPlayingScreen(model, covers, r::position, actions, openMenu,
+                            onSearch = { focusSearch = true }, overflow = more)
+                    }
+                }
+            } else when (page) {
                 Page.CONNECT -> ConnectScreen(
                     found = found, link = link, busyPc = pcName,
                     onConnect = { b, code -> r.pair(b, code) }, onMenu = openMenu,
