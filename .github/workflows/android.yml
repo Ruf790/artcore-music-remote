@@ -133,3 +133,19 @@ jobs:
             screens/files/screens/*.png
             instrument.txt
           if-no-files-found: warn
+
+      # artifacts are behind a sign-in; the PNGs on a branch can be opened right on GitHub
+      - name: Put the screenshots on the "screenshots" branch
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/pub" && cp screens/files/screens/*.png "$RUNNER_TEMP/pub/"
+          cd "$RUNNER_TEMP/pub"
+          printf '# ArtCore Music Remote — screenshots\n\nBranch `%s`, commit %s\n\n' "$GITHUB_REF_NAME" "$GITHUB_SHA" > README.md
+          for f in *.png; do printf '### %s\n\n![%s](%s)\n\n' "${f%.png}" "$f" "$f" >> README.md; done
+          git init -q -b screenshots
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Screenshots of $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" screenshots
