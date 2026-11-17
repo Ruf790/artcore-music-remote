@@ -42,7 +42,12 @@ class LinkTest {
     fun tearDown() {
         scope.cancel()
         exec.shutdownNow()
-        server.shutdown()
+        synchronized(sockets) { sockets.forEach { it.cancel() } }
+        try {
+            server.shutdown()
+        } catch (e: java.io.IOException) {
+            // a WebSocket the stand-in PC still holds; the test itself is over
+        }
     }
 
     /** A PC that answers hello: the right code gets a token, a known token gets in, anything else is refused. */
