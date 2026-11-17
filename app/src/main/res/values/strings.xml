@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">ArtCore Music Remote</string>
+    <string name="tracks">Tracks</string>
+    <string name="now_playing">Now playing</string>
+    <string name="connect_title">Connect</string>
+    <string name="search_hint">Search: track, artist, album</string>
+    <string name="group_singles">Loose tracks</string>
+    <string name="group_radio">Radio</string>
+    <string name="radio">Radio</string>
+    <string name="playlists">Playlists</string>
+    <string name="choose_pc">Choose a PC</string>
+    <string name="settings">Settings</string>
+    <string name="theme">Theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="language">Language</string>
+    <string name="lang_system">As on the phone</string>
+    <string name="lang_ru" translatable="false">Русский</string>
+    <string name="lang_en" translatable="false">English</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="disconnect_hint">The phone forgets this PC. To connect again you will need the code from ArtCore Music.</string>
+    <string name="searching">Looking for ArtCore Music on the Wi-Fi…</string>
+    <string name="searching_hint">On the PC: ArtCore Music → Settings → Remote → turn the remote on. The phone and the PC must be on the same network.</string>
+    <string name="code_label">Code</string>
+    <string name="code_hint">4 digits from ArtCore Music → Settings → Remote</string>
+    <string name="connect">Connect</string>
+    <string name="manual_ip">Enter the address by hand</string>
+    <string name="ip_address">PC address, e.g. 192.168.1.10</string>
+    <string name="port">Port</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="pc_line">%1$s · ArtCore Music %2$s</string>
+    <string name="manual_pc">Added by hand</string>
+    <string name="err_bad_code">Wrong code. Check it in ArtCore Music → Settings → Remote.</string>
+    <string name="err_too_many">Too many wrong codes. Wait a minute and try again.</string>
+    <string name="err_forgotten">The PC no longer knows this phone. Connect again with the code.</string>
+    <string name="err_proto">This ArtCore Music does not fit the app. Update ArtCore Music to 1.8.0 or newer.</string>
+    <string name="err_other">The PC refused the connection (%s).</string>
+    <string name="connecting">Connecting to %s…</string>
+    <string name="reconnecting">Connection lost. Reconnecting to %s…</string>
+    <string name="retry">Retry</string>
+    <string name="up_next">Up next: %s</string>
+    <string name="live">Live broadcast…</string>
+    <string name="live_short">Live</string>
+    <string name="nothing_playing">Nothing is playing</string>
+    <string name="empty_playlist">This playlist is empty</string>
+    <string name="no_results">Nothing found</string>
+    <string name="no_radio">No radio stations in the playlists</string>
+    <string name="volume">Volume</string>
+    <string name="mute">Mute</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="next">Next</string>
+    <string name="prev">Previous</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="repeat">Repeat</string>
+    <string name="menu">Menu</string>
+    <string name="more">More</string>
+    <string name="search">Search</string>
+    <string name="channel_playback">Playback on the PC</string>
+    <string name="connected_to">Connected: %s</string>
+    <string name="not_connected">Not connected</string>
+    <string name="local_net_needed">Allow access to devices on the local network so the app can find and control the PC.</string>
+    <string name="grant">Allow</string>
+    <string name="tracks_n">%d tracks</string>
+</resources>
