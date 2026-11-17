@@ -8,7 +8,12 @@ import android.graphics.Shader
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import android.content.res.Configuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -33,6 +38,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import java.util.Locale
 
 /**
  * Screenshots of the three screens in the light and the dark theme (CI pulls them from the phone).
@@ -95,7 +101,8 @@ class ScreenshotTest {
         link = LinkState.Online("RUFFNECK-PC"),
     )
 
-    private fun shoot(name: String, dark: Boolean, content: @Composable () -> Unit) {
+    private fun shoot(screen: String, dark: Boolean, ru: Boolean, content: @Composable () -> Unit) {
+        val name = screen + (if (dark) "_dark" else "_light") + (if (ru) "_ru" else "_en")
         rule.runOnUiThread {
             rule.activity.enableEdgeToEdge(
                 SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
@@ -104,7 +111,14 @@ class ScreenshotTest {
             )
         }
         rule.mainClock.autoAdvance = false
-        rule.setContent { RemoteTheme(dark) { content() } }
+        rule.setContent {
+            val ctx = LocalContext.current
+            val conf = Configuration(ctx.resources.configuration).apply { setLocale(Locale.forLanguageTag(if (ru) "ru" else "en")) }
+            val local = remember { ctx.createConfigurationContext(conf) }
+            CompositionLocalProvider(LocalContext provides local, LocalConfiguration provides conf) {
+                RemoteTheme(dark) { content() }
+            }
+        }
         rule.mainClock.advanceTimeBy(1200)
         rule.waitForIdle()
         Thread.sleep(800)
@@ -115,18 +129,18 @@ class ScreenshotTest {
 
     private val none = object : Actions {}
 
-    private fun tracks(dark: Boolean) = shoot("tracks_" + if (dark) "dark" else "light", dark) {
+    private fun tracks(dark: Boolean, ru: Boolean) = shoot("tracks", dark, ru) {
         TracksScreen(model(album[1], album[2], 2, "MP3 · 192 kbps · 48 kHz"), covers, { 114.0 }, none, 0, {}, "", {}, false,
             {}, {}, listOf("PC" to {}))
     }
 
-    private fun now(dark: Boolean) = shoot("now_playing_" + if (dark) "dark" else "light", dark) {
+    private fun now(dark: Boolean, ru: Boolean) = shoot("now_playing", dark, ru) {
         val m = model(surround[0], surround[1], 4, "FLAC · 24 bit · 96 kHz · 5.1")
         NowPlayingScreen(m, covers, { 114.0 }, none,
             {}, {}, listOf("PC" to {}))
     }
 
-    private fun connect(dark: Boolean) = shoot("connect_" + if (dark) "dark" else "light", dark) {
+    private fun connect(dark: Boolean, ru: Boolean) = shoot("connect", dark, ru) {
         ConnectScreen(
             found = listOf(Beacon("RUFFNECK-PC", "192.168.1.10", 47870, "1.8.0", "a"),
                 Beacon("STUDIO", "192.168.1.24", 47870, "1.8.0", "b")),
@@ -134,10 +148,16 @@ class ScreenshotTest {
         )
     }
 
-    @Test fun tracksLight() = tracks(false)
-    @Test fun tracksDark() = tracks(true)
-    @Test fun nowPlayingLight() = now(false)
-    @Test fun nowPlayingDark() = now(true)
-    @Test fun connectLight() = connect(false)
-    @Test fun connectDark() = connect(true)
+    @Test fun tracksLightRu() = tracks(false, true)
+    @Test fun tracksDarkRu() = tracks(true, true)
+    @Test fun nowPlayingLightRu() = now(false, true)
+    @Test fun nowPlayingDarkRu() = now(true, true)
+    @Test fun connectLightRu() = connect(false, true)
+    @Test fun connectDarkRu() = connect(true, true)
+    @Test fun tracksLightEn() = tracks(false, false)
+    @Test fun tracksDarkEn() = tracks(true, false)
+    @Test fun nowPlayingLightEn() = now(false, false)
+    @Test fun nowPlayingDarkEn() = now(true, false)
+    @Test fun connectLightEn() = connect(false, false)
+    @Test fun connectDarkEn() = connect(true, false)
 }

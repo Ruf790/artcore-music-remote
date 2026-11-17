@@ -42,7 +42,7 @@ class LinkTest {
     fun tearDown() {
         scope.cancel()
         exec.shutdownNow()
-        synchronized(sockets) { sockets.forEach { it.cancel() } }
+        synchronized(sockets) { sockets.forEach { runCatching { it.close(1001, null) } } }
         try {
             server.shutdown()
         } catch (e: java.io.IOException) {

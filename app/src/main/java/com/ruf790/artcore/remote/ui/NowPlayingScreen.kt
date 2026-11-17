@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -119,14 +117,11 @@ fun NowPlayingScreen(
             val live = t?.stream == true
             val dur = st.duration
             val shown = drag ?: if (dur > 0) (pos / dur).toFloat().coerceIn(0f, 1f) else 0f
-            Slider(
-                value = if (live) 1f else shown,
-                onValueChange = { if (!live && dur > 0) drag = it },
-                onValueChangeFinished = { drag?.let { actions.seek(it * dur) }; drag = null },
+            SeekBar(
+                fraction = if (live) 1f else shown,
                 enabled = t != null && !live && dur > 0,
-                colors = SliderDefaults.colors(thumbColor = p.red, activeTrackColor = p.red, inactiveTrackColor = p.line,
-                    disabledThumbColor = if (live) p.red else p.line, disabledActiveTrackColor = if (live) p.red else p.line,
-                    disabledInactiveTrackColor = p.line),
+                onDrag = { drag = it },
+                onSeek = { actions.seek(it * dur); drag = null },
             )
             Row(Modifier.fillMaxWidth()) {
                 Text(fmtTime(drag?.let { it * dur } ?: pos), color = p.text2, fontSize = 12.sp)

@@ -43,7 +43,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -189,6 +193,51 @@ fun LinkBanner(link: LinkState, pc: String, actions: Actions) {
         verticalAlignment = Alignment.CenterVertically) {
         Text(text, color = p.text2, fontSize = 13.sp, modifier = Modifier.weight(1f), maxLines = 2)
         TextButton(onClick = { actions.retry() }) { Text(stringResource(R.string.retry), color = p.red) }
+    }
+}
+
+/**
+ * The seek bar: a thin track, red up to the position, a red knob. Dragging moves only the knob ([onDrag]);
+ * the PC seeks when the finger is lifted ([onSeek]). A tap seeks at once.
+ */
+@Composable
+fun SeekBar(fraction: Float, enabled: Boolean, onDrag: (Float) -> Unit, onSeek: (Float) -> Unit, modifier: Modifier = Modifier) {
+    val p = LocalPalette.current
+    var width by remember { mutableFloatStateOf(1f) }
+    var dragging by remember { mutableFloatStateOf(-1f) }
+    val f = (if (dragging >= 0f) dragging else fraction).coerceIn(0f, 1f)
+    androidx.compose.foundation.Canvas(
+        modifier.fillMaxWidth().height(28.dp)
+            .onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                detectTapGestures { o -> onSeek((o.x / width).coerceIn(0f, 1f)) }
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                detectHorizontalDragGestures(
+                    onDragStart = { o -> dragging = (o.x / width).coerceIn(0f, 1f); onDrag(dragging) },
+                    onDragEnd = { onSeek(dragging); dragging = -1f },
+                    onDragCancel = { dragging = -1f },
+                ) { change, _ ->
+                    dragging = (change.position.x / width).coerceIn(0f, 1f)
+                    onDrag(dragging)
+                }
+            },
+    ) {
+        val r = 7.dp.toPx()
+        val y = size.height / 2
+        val h = 4.dp.toPx()
+        val x0 = r
+        val x1 = size.width - r
+        val x = x0 + (x1 - x0) * f
+        drawRoundRect(p.line, androidx.compose.ui.geometry.Offset(x0, y - h / 2),
+            androidx.compose.ui.geometry.Size(x1 - x0, h), androidx.compose.ui.geometry.CornerRadius(h / 2))
+        if (enabled || f > 0f) {
+            drawRoundRect(p.red, androidx.compose.ui.geometry.Offset(x0, y - h / 2),
+                androidx.compose.ui.geometry.Size(x - x0, h), androidx.compose.ui.geometry.CornerRadius(h / 2))
+            drawCircle(p.red, if (dragging >= 0f) r * 1.25f else r, androidx.compose.ui.geometry.Offset(x, y))
+        }
     }
 }
 
