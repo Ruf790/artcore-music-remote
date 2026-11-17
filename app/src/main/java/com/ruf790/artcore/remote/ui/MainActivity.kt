@@ -263,7 +263,7 @@ class MainActivity : ComponentActivity() {
                     Spacer(Modifier.width(1.dp).fillMaxHeight().background(pal.line))
                     Box(Modifier.weight(0.58f).fillMaxHeight()) {
                         NowPlayingScreen(model, covers, r::position, actions, openMenu,
-                            onSearch = { focusSearch = true }, overflow = more)
+                            onSearch = { focusSearch = true }, overflow = more, compact = true)
                     }
                 }
             } else when (page) {

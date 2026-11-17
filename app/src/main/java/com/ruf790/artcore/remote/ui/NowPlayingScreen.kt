@@ -50,6 +50,7 @@ fun NowPlayingScreen(
     onMenu: () -> Unit,
     onSearch: () -> Unit,
     overflow: List<Pair<String, () -> Unit>>,
+    compact: Boolean = false,      // the right pane on wide screens: the volume only, the menu and search are on the left
 ) {
     val p = LocalPalette.current
     val st = model.state
@@ -62,10 +63,10 @@ fun NowPlayingScreen(
     }
     Column(Modifier.fillMaxSize().background(p.bg)) {
         StatusBarStrip()
-        RedHeader(stringResource(R.string.now_playing), onMenu) {
-            HeaderIcon(R.drawable.ic_search, stringResource(R.string.search), onClick = onSearch)
+        RedHeader(stringResource(R.string.now_playing), if (compact) null else onMenu) {
+            if (!compact) HeaderIcon(R.drawable.ic_search, stringResource(R.string.search), onClick = onSearch)
             VolumeButton(st.volume, st.muted, actions)
-            Overflow(overflow)
+            if (!compact) Overflow(overflow)
         }
         LinkBanner(model.link, model.pcName, actions)
         Column(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {

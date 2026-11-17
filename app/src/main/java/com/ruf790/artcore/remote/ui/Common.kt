@@ -103,15 +103,15 @@ fun HeaderIcon(@DrawableRes icon: Int, desc: String, tint: Color = Color.White, 
 
 /** The red bar: ☰, the title, the actions on the right. */
 @Composable
-fun RedHeader(title: String, onMenu: () -> Unit, actions: @Composable () -> Unit = {}) {
+fun RedHeader(title: String, onMenu: (() -> Unit)?, actions: @Composable () -> Unit = {}) {
     val p = LocalPalette.current
     Row(
         Modifier.fillMaxWidth().height(56.dp).background(p.red).padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        HeaderIcon(R.drawable.ic_menu, stringResource(R.string.menu), onClick = onMenu)
+        if (onMenu != null) HeaderIcon(R.drawable.ic_menu, stringResource(R.string.menu), onClick = onMenu)
         Text(title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f).padding(start = 8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            modifier = Modifier.weight(1f).padding(start = if (onMenu != null) 8.dp else 16.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         actions()
     }
 }
