@@ -76,10 +76,15 @@ class MainActivity : ComponentActivity() {
 
     private val r: Remote get() = remote
     private var localNetGranted = mutableStateOf(true)
+    /** The app is on the screen: the PCs on the network are listened for only then. */
+    private var visible = mutableStateOf(false)
     private val askLocalNet = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         localNetGranted.value = ok
         if (ok) {
-            r.discovery.stop()
+            if (r.discovery.running) {                     // the socket opened without the permission: again
+                r.discovery.stop()
+                r.discovery.start()
+            }
             r.retryNow()
         }
     }
@@ -123,6 +128,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        visible.value = true
         r.retryNow()
         RemoteService.sync(this, r)
     }
@@ -134,7 +140,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        r.discovery.stop()
+        visible.value = false
     }
 
     private fun hasLocalNetwork(): Boolean = Build.VERSION.SDK_INT < 37 ||
@@ -194,8 +200,10 @@ class MainActivity : ComponentActivity() {
             }
         }
         // the found PCs are listened for on the pairing page, and while the saved PC is away (it may have a new address)
-        LaunchedEffect(page, link is LinkState.Online) {
-            if (page == Page.CONNECT || (r.paired && link !is LinkState.Online)) r.discovery.start() else r.discovery.stop()
+        val shown by visible
+        LaunchedEffect(page, link is LinkState.Online, shown) {
+            if (shown && (page == Page.CONNECT || (r.paired && link !is LinkState.Online))) r.discovery.start()
+            else r.discovery.stop()
         }
         LaunchedEffect(playlists.items.size, playlists.playing) {
             if (tab != RADIO_TAB && playlists.items.none { it.id == tab }) {
