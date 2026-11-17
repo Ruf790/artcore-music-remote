@@ -96,6 +96,14 @@ class RemoteService : Service() {
             setSessionActivity(openApp())
             isActive = true
         }
+        // foreground at once: Android requires it soon after startForegroundService, even if we stop right away
+        started = true
+        val first = build(remote.state.value)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTE_ID, first, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+        } else {
+            startForeground(NOTE_ID, first)
+        }
         val r = remote
         r.onCover = { _, _, _ -> update(r.state.value) }
         scope.launch {
@@ -110,15 +118,6 @@ class RemoteService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!started) {
-            started = true
-            val n = build(remote.state.value)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTE_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
-            } else {
-                startForeground(NOTE_ID, n)
-            }
-        }
         when (intent?.action) {
             ACTION_PREV -> remote.prev()
             ACTION_TOGGLE -> remote.playPause()
