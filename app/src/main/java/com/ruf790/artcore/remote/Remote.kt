@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateMapOf
 import com.ruf790.artcore.remote.data.SavedPc
 import com.ruf790.artcore.remote.data.Store
@@ -12,6 +13,7 @@ import com.ruf790.artcore.remote.net.Discovery
 import com.ruf790.artcore.remote.net.Link
 import com.ruf790.artcore.remote.net.LinkState
 import com.ruf790.artcore.remote.net.Target
+import com.ruf790.artcore.remote.net.Wol
 import com.ruf790.artcore.remote.proto.Beacon
 import com.ruf790.artcore.remote.proto.Incoming
 import com.ruf790.artcore.remote.proto.PlayerState
@@ -25,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /** Everything the screens and the notification show, and every button: one per app (see [App]). */
 class Remote(private val context: Context) {
@@ -87,6 +90,15 @@ class Remote(private val context: Context) {
     }
 
     fun retryNow() = conn.retryNow()
+
+    /** 1.2.0: Wake-on-LAN — the magic packet for the MAC address from the settings; false if there is none. */
+    fun wake(): Boolean {
+        val mac = Wol.parse(store.wolMac) ?: return false
+        val host = store.pc?.host
+        scope.launch(Dispatchers.IO) { Wol.send(mac, host) }
+        Toast.makeText(context, R.string.wol_sent, Toast.LENGTH_SHORT).show()
+        return true
+    }
 
     /** 1.0.2: Menu → Exit — close the connection and the notification; the PC stays paired (next start connects). */
     fun quit() {

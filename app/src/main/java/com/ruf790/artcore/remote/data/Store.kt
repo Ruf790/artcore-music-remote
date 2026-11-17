@@ -43,6 +43,16 @@ class Store(context: Context) {
         get() = sp.getString("language", "") ?: ""
         set(v) = sp.edit().putString("language", v).apply()
 
+    /** The PC's MAC address for Wake-on-LAN ("" = not set). */
+    var wolMac: String
+        get() = sp.getString("wol_mac", "") ?: ""
+        set(v) = sp.edit().putString("wol_mac", v.trim()).apply()
+
+    /** The accent of "Now playing" follows the cover (on by default). */
+    var coverColors: Boolean
+        get() = sp.getBoolean("cover_colors", true)
+        set(v) = sp.edit().putBoolean("cover_colors", v).apply()
+
     var askedNotifications: Boolean
         get() = sp.getBoolean("asked_notifications", false)
         set(v) = sp.edit().putBoolean("asked_notifications", v).apply()

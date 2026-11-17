@@ -19,6 +19,9 @@
 - Меню ☰: плейлисты, радио, выбор ПК, настройки (тема светлая / тёмная, язык, отключиться).
 - Уведомление и экран блокировки с ⏮ ⏯ ⏹ ⏭ и обложкой, пока музыка играет; кнопки громкости телефона меняют громкость ArtCore Music, когда приложение открыто.
 - Планшеты и широкие экраны: треки слева, «Сейчас играет» справа.
+- **Режим панели** (меню ☰ → «Режим панели»): планшет как дисплей домашнего плеера — чёрный фон, крупная обложка, часы, экран не гаснет и приглушён; касание показывает кнопки, «Назад» — выход.
+- **Цвета из обложки**: акцент и фон «Сейчас играет» подстраиваются под альбом (можно выключить в настройках).
+- **Включение ПК (Wake-on-LAN)**: укажите MAC-адрес ПК в настройках — при потере связи в строке состояния появится кнопка «Разбудить ПК». На ПК Wake-on-LAN должен быть включён в BIOS и в свойствах сетевой карты.
 - Русский и английский — по языку телефона (или выбрать в настройках).
 - Только локальная сеть: ArtCore Music пускает телефоны из 192.168.*, 10.*, 172.16–31.*, по коду и личному токену.
 
@@ -36,7 +39,7 @@ An Android remote for ArtCore Music: every playlist and album of the PC on the p
 
 **Connecting:** turn the remote on in ArtCore Music 1.8.0+ (Settings → Remote), open the app on the same Wi-Fi — the PC shows up by itself — enter the 4-digit code once. After that the phone connects (and reconnects) by itself. ⋮ → *Enter the address by hand* if the network blocks broadcasts.
 
-Tablets and wide screens: the tracks on the left, the player on the right. Media notification and lock-screen controls while music plays, phone volume keys control ArtCore Music while the app is open, light and dark theme, Russian and English. Local network only; pairing code plus a per-phone token.
+Tablets and wide screens: the tracks on the left, the player on the right. Desk mode (☰ → Desk mode): the tablet as a home-player display with a big cover and a clock. Accent colours that follow the album cover. Wake-on-LAN: enter the PC's MAC address in the settings and a *Wake the PC* button appears while the PC is away. Media notification and lock-screen controls while music plays, phone volume keys control ArtCore Music while the app is open, light and dark theme, Russian and English. Local network only; pairing code plus a per-phone token.
 
 Build: `./gradlew assembleRelease`; tests: `./gradlew testDebugUnitTest`. CI builds the APK, attaches it to published releases and takes emulator screenshots.
 

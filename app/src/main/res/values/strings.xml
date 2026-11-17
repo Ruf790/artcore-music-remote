@@ -73,4 +73,12 @@
     <string name="about_text">A remote for ArtCore Music on the PC: playlists, albums, radio, playback and volume control from your phone over the local Wi-Fi.</string>
     <string name="about_license">Open source, GNU GPL v3.</string>
     <string name="about_source">Source code on GitHub</string>
+    <string name="desk_mode">Desk mode</string>
+    <string name="cover_colors">Colors from the cover</string>
+    <string name="wol_title">Wake the PC (Wake-on-LAN)</string>
+    <string name="wol_mac_hint">PC MAC address, e.g. 1A:2B:3C:4D:5E:6F</string>
+    <string name="wol_invalid">This is not a MAC address</string>
+    <string name="wol_help">Wake-on-LAN must be on in the PC\'s BIOS and network adapter settings.</string>
+    <string name="wol_wake">Wake the PC</string>
+    <string name="wol_sent">Wake-up signal sent</string>
 </resources>

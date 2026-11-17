@@ -70,4 +70,12 @@
     <string name="about_text">Пульт для ArtCore Music на ПК: плейлисты, альбомы, радио, управление воспроизведением и громкостью с телефона по локальной сети Wi-Fi.</string>
     <string name="about_license">Открытый исходный код, GNU GPL v3.</string>
     <string name="about_source">Исходный код на GitHub</string>
+    <string name="desk_mode">Режим панели</string>
+    <string name="cover_colors">Цвета из обложки</string>
+    <string name="wol_title">Включение ПК (Wake-on-LAN)</string>
+    <string name="wol_mac_hint">MAC-адрес ПК, например 1A:2B:3C:4D:5E:6F</string>
+    <string name="wol_invalid">Это не MAC-адрес</string>
+    <string name="wol_help">Wake-on-LAN должен быть включён в BIOS и в свойствах сетевой карты ПК.</string>
+    <string name="wol_wake">Разбудить ПК</string>
+    <string name="wol_sent">Сигнал отправлен</string>
 </resources>

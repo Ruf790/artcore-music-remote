@@ -81,6 +81,9 @@ interface Actions {
     fun cycleRepeat() {}
     fun toggleShuffle() {}
     fun retry() {}
+    /** Wake-on-LAN: is there a MAC address, and send the packet. */
+    val canWake: Boolean get() = false
+    fun wake() {}
 }
 
 /** Album covers by id; null while it is not here (yet) or there is none. */
@@ -193,6 +196,9 @@ fun LinkBanner(link: LinkState, pc: String, actions: Actions) {
         verticalAlignment = Alignment.CenterVertically) {
         Text(text, color = p.text2, fontSize = 13.sp, modifier = Modifier.weight(1f), maxLines = 2)
         TextButton(onClick = { actions.retry() }) { Text(stringResource(R.string.retry), color = p.red) }
+        if (actions.canWake) {
+            TextButton(onClick = { actions.wake() }) { Text(stringResource(R.string.wol_wake), color = p.red) }
+        }
     }
 }
 

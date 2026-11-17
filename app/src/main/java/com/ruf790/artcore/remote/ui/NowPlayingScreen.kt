@@ -1,6 +1,11 @@
 package com.ruf790.artcore.remote.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -41,6 +46,7 @@ import com.ruf790.artcore.remote.proto.fmtTime
 import com.ruf790.artcore.remote.proto.subtitle
 import kotlinx.coroutines.delay
 
+/** "Now playing"; with [coverColors] its accent and its background tint follow the album cover. */
 @Composable
 fun NowPlayingScreen(
     model: UiModel,
@@ -50,7 +56,38 @@ fun NowPlayingScreen(
     onMenu: () -> Unit,
     onSearch: () -> Unit,
     overflow: List<Pair<String, () -> Unit>>,
-    compact: Boolean = false,      // the right pane on wide screens: the volume only, the menu and search are on the left
+    compact: Boolean = false,
+    coverColors: Boolean = false,
+) {
+    val base = LocalPalette.current
+    val track = model.state.track
+    val img = track?.let { if (it.stream) null else covers.get(it.cover, 512) }
+    val accent = remember(img, coverColors) { if (coverColors) coverAccent(img) else null }
+    val red by animateColorAsState(accent ?: base.red, tween(600), label = "accent")
+    val k by animateFloatAsState(if (accent != null) 1f else 0f, tween(600), label = "tint")
+    val tint = (if (base.dark) 0.16f else 0.07f) * k
+    val tinted = base.copy(
+        red = red,
+        statusBar = lerp(base.statusBar, lerp(red, Color.Black, 0.3f), k),
+        bg = lerp(base.bg, red, tint),
+        bg2 = lerp(base.bg2, red, tint * 1.4f),
+        coverBg = lerp(base.coverBg, red, tint * 1.4f),
+    )
+    CompositionLocalProvider(LocalPalette provides tinted) {
+        NowPlayingBody(model, covers, position, actions, onMenu, onSearch, overflow, compact)
+    }
+}
+
+@Composable
+private fun NowPlayingBody(
+    model: UiModel,
+    covers: Covers,
+    position: () -> Double,
+    actions: Actions,
+    onMenu: () -> Unit,
+    onSearch: () -> Unit,
+    overflow: List<Pair<String, () -> Unit>>,
+    compact: Boolean,      // the right pane on wide screens: the volume only, the menu and search are on the left
 ) {
     val p = LocalPalette.current
     val st = model.state

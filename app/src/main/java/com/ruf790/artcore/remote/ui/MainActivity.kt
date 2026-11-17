@@ -38,6 +38,8 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -68,6 +70,7 @@ import com.ruf790.artcore.remote.R
 import com.ruf790.artcore.remote.Remote
 import com.ruf790.artcore.remote.data.Store
 import com.ruf790.artcore.remote.net.LinkState
+import com.ruf790.artcore.remote.net.Wol
 import com.ruf790.artcore.remote.proto.radioStations
 import com.ruf790.artcore.remote.remote
 import com.ruf790.artcore.remote.service.RemoteService
@@ -196,6 +199,8 @@ class MainActivity : ComponentActivity() {
         val wide = LocalConfiguration.current.screenWidthDp >= 840
         val pal = LocalPalette.current
         var about by remember { mutableStateOf(false) }
+        var desk by remember { mutableStateOf(false) }
+        var coverColors by remember { mutableStateOf(r.store.coverColors) }
         val drawer = rememberDrawerState(DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         val localNet by localNetGranted
@@ -234,12 +239,14 @@ class MainActivity : ComponentActivity() {
         }
         val more = listOf(
             stringResource(R.string.choose_pc) to { page = Page.CONNECT },
+            stringResource(R.string.desk_mode) to { desk = true },
             stringResource(R.string.settings) to { settings = true },
             stringResource(R.string.about) to { about = true },
             stringResource(R.string.exit) to exit,
         )
 
-        ModalNavigationDrawer(drawerState = drawer, drawerContent = {
+        Box(Modifier.fillMaxSize()) {
+        ModalNavigationDrawer(drawerState = drawer, gesturesEnabled = !desk, drawerContent = {
             DrawerMenu(model, onPlaylist = { id ->
                 tab = id; query = ""; page = Page.TRACKS; scope.launch { drawer.close() }
             }, onRadio = {
@@ -250,6 +257,8 @@ class MainActivity : ComponentActivity() {
                 settings = true; scope.launch { drawer.close() }
             }, onAbout = {
                 about = true; scope.launch { drawer.close() }
+            }, onDesk = {
+                desk = true; scope.launch { drawer.close() }
             }, onExit = exit)
         }) {
             if (wide && page != Page.CONNECT) {
@@ -263,7 +272,8 @@ class MainActivity : ComponentActivity() {
                     Spacer(Modifier.width(1.dp).fillMaxHeight().background(pal.line))
                     Box(Modifier.weight(0.58f).fillMaxHeight()) {
                         NowPlayingScreen(model, covers, r::position, actions, openMenu,
-                            onSearch = { focusSearch = true }, overflow = more, compact = true)
+                            onSearch = { focusSearch = true }, overflow = more, compact = true,
+                            coverColors = coverColors)
                     }
                 }
             } else when (page) {
@@ -277,8 +287,11 @@ class MainActivity : ComponentActivity() {
                     focusSearch, openMenu, { page = Page.NOW }, more,
                 )
                 Page.NOW -> NowPlayingScreen(model, covers, r::position, actions, openMenu,
-                    onSearch = { focusSearch = true; page = Page.TRACKS }, overflow = more)
+                    onSearch = { focusSearch = true; page = Page.TRACKS }, overflow = more,
+                    coverColors = coverColors)
             }
+        }
+        if (desk) DeskMode(model, covers, r::position, actions, coverColors, onExit = { desk = false })
         }
 
         if (about) AboutDialog(onDismiss = { about = false })
@@ -289,6 +302,8 @@ class MainActivity : ComponentActivity() {
                 onDismiss = { settings = false }, onTheme = { settings = false; onTheme(it) },
                 onLanguage = { settings = false; onLanguage(it) },
                 onDisconnect = { settings = false; r.forget(); page = Page.CONNECT },
+                coverColors = coverColors, onCoverColors = { coverColors = it; r.store.coverColors = it },
+                mac = r.store.wolMac, onMac = { r.store.wolMac = it },
             )
         }
     }
@@ -313,12 +328,14 @@ private class RemoteActions(private val r: Remote) : Actions {
     override fun cycleRepeat() = r.cycleRepeat()
     override fun toggleShuffle() = r.toggleShuffle()
     override fun retry() = r.retryNow()
+    override val canWake: Boolean get() = Wol.parse(r.store.wolMac) != null
+    override fun wake() { r.wake() }
 }
 
 /** ☰: the playlists, the radio, choosing the PC, the settings, exit. */
 @Composable
 fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, onPc: () -> Unit, onSettings: () -> Unit,
-               onAbout: () -> Unit, onExit: () -> Unit) {
+               onAbout: () -> Unit, onExit: () -> Unit, onDesk: () -> Unit = {}) {
     val p = LocalPalette.current
     ModalDrawerSheet(drawerContainerColor = p.bg) {
         Column(Modifier.fillMaxWidth().background(p.red).padding(start = 20.dp, end = 20.dp, top = 36.dp, bottom = 18.dp)) {
@@ -339,6 +356,7 @@ fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, o
             }
             HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
             MenuRow(R.drawable.ic_computer, stringResource(R.string.choose_pc), model.pcName) { onPc() }
+            MenuRow(R.drawable.ic_desk, stringResource(R.string.desk_mode), "") { onDesk() }
             MenuRow(R.drawable.ic_tune, stringResource(R.string.settings), "") { onSettings() }
             MenuRow(R.drawable.ic_info, stringResource(R.string.about), "") { onAbout() }
             HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
@@ -370,23 +388,38 @@ private fun MenuRow(icon: Int, title: String, sub: String, onClick: () -> Unit) 
 private fun SettingsDialog(
     dark: Boolean, language: String, paired: Boolean,
     onDismiss: () -> Unit, onTheme: (Boolean) -> Unit, onLanguage: (String) -> Unit, onDisconnect: () -> Unit,
+    coverColors: Boolean, onCoverColors: (Boolean) -> Unit, mac: String, onMac: (String) -> Unit,
 ) {
     val p = LocalPalette.current
     var confirm by remember { mutableStateOf(false) }
+    var macText by remember { mutableStateOf(mac) }
+    val macBad = macText.isNotBlank() && Wol.parse(macText) == null
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = p.bg,
         title = { Text(stringResource(R.string.settings), color = p.text) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(stringResource(R.string.theme), color = p.red, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Choice(stringResource(R.string.theme_light), !dark) { if (dark) onTheme(false) }
                 Choice(stringResource(R.string.theme_dark), dark) { if (!dark) onTheme(true) }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(R.string.cover_colors), color = p.text, fontSize = 15.sp, modifier = Modifier.weight(1f))
+                    Switch(checked = coverColors, onCheckedChange = onCoverColors)
+                }
                 Spacer(Modifier.height(10.dp))
                 Text(stringResource(R.string.language), color = p.red, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Choice(stringResource(R.string.lang_system), language.isEmpty()) { if (language.isNotEmpty()) onLanguage("") }
                 Choice(stringResource(R.string.lang_ru), language == "ru") { if (language != "ru") onLanguage("ru") }
                 Choice(stringResource(R.string.lang_en), language == "en") { if (language != "en") onLanguage("en") }
+                Spacer(Modifier.height(10.dp))
+                Text(stringResource(R.string.wol_title), color = p.red, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                OutlinedTextField(
+                    value = macText, onValueChange = { macText = it; onMac(it) }, singleLine = true, isError = macBad,
+                    placeholder = { Text(stringResource(R.string.wol_mac_hint), fontSize = 13.sp) },
+                    supportingText = { Text(stringResource(if (macBad) R.string.wol_invalid else R.string.wol_help), fontSize = 12.sp) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                )
                 if (paired) {
                     Spacer(Modifier.height(10.dp))
                     HorizontalDivider(color = p.line)
