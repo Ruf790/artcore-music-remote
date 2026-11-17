@@ -65,4 +65,9 @@
     <string name="local_net_needed">Разрешите доступ к устройствам в локальной сети, чтобы приложение нашло ПК и управляло им.</string>
     <string name="grant">Разрешить</string>
     <string name="tracks_n">%d тр.</string>
+    <string name="about">О программе</string>
+    <string name="version_n">Версия %s</string>
+    <string name="about_text">Пульт для ArtCore Music на ПК: плейлисты, альбомы, радио, управление воспроизведением и громкостью с телефона по локальной сети Wi-Fi.</string>
+    <string name="about_license">Открытый исходный код, GNU GPL v3.</string>
+    <string name="about_source">Исходный код на GitHub</string>
 </resources>

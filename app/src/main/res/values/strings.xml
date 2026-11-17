@@ -68,4 +68,9 @@
     <string name="local_net_needed">Allow access to devices on the local network so the app can find and control the PC.</string>
     <string name="grant">Allow</string>
     <string name="tracks_n">%d tracks</string>
+    <string name="about">About</string>
+    <string name="version_n">Version %s</string>
+    <string name="about_text">A remote for ArtCore Music on the PC: playlists, albums, radio, playback and volume control from your phone over the local Wi-Fi.</string>
+    <string name="about_license">Open source, GNU GPL v3.</string>
+    <string name="about_source">Source code on GitHub</string>
 </resources>

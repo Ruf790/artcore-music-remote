@@ -51,12 +51,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.ruf790.artcore.remote.BuildConfig
 import com.ruf790.artcore.remote.R
 import com.ruf790.artcore.remote.Remote
 import com.ruf790.artcore.remote.data.Store
@@ -185,6 +187,7 @@ class MainActivity : ComponentActivity() {
         var query by remember { mutableStateOf("") }
         var focusSearch by remember { mutableStateOf(false) }
         var settings by remember { mutableStateOf(false) }
+        var about by remember { mutableStateOf(false) }
         val drawer = rememberDrawerState(DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         val localNet by localNetGranted
@@ -224,6 +227,7 @@ class MainActivity : ComponentActivity() {
         val more = listOf(
             stringResource(R.string.choose_pc) to { page = Page.CONNECT },
             stringResource(R.string.settings) to { settings = true },
+            stringResource(R.string.about) to { about = true },
             stringResource(R.string.exit) to exit,
         )
 
@@ -236,6 +240,8 @@ class MainActivity : ComponentActivity() {
                 page = Page.CONNECT; scope.launch { drawer.close() }
             }, onSettings = {
                 settings = true; scope.launch { drawer.close() }
+            }, onAbout = {
+                about = true; scope.launch { drawer.close() }
             }, onExit = exit)
         }) {
             when (page) {
@@ -252,6 +258,8 @@ class MainActivity : ComponentActivity() {
                     onSearch = { focusSearch = true; page = Page.TRACKS }, overflow = more)
             }
         }
+
+        if (about) AboutDialog(onDismiss = { about = false })
 
         if (settings) {
             SettingsDialog(
@@ -288,7 +296,7 @@ private class RemoteActions(private val r: Remote) : Actions {
 /** ☰: the playlists, the radio, choosing the PC, the settings, exit. */
 @Composable
 fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, onPc: () -> Unit, onSettings: () -> Unit,
-               onExit: () -> Unit) {
+               onAbout: () -> Unit, onExit: () -> Unit) {
     val p = LocalPalette.current
     ModalDrawerSheet(drawerContainerColor = p.bg) {
         Column(Modifier.fillMaxWidth().background(p.red).padding(start = 20.dp, end = 20.dp, top = 36.dp, bottom = 18.dp)) {
@@ -310,6 +318,7 @@ fun DrawerMenu(model: UiModel, onPlaylist: (Int) -> Unit, onRadio: () -> Unit, o
             HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
             MenuRow(R.drawable.ic_computer, stringResource(R.string.choose_pc), model.pcName) { onPc() }
             MenuRow(R.drawable.ic_tune, stringResource(R.string.settings), "") { onSettings() }
+            MenuRow(R.drawable.ic_info, stringResource(R.string.about), "") { onAbout() }
             HorizontalDivider(Modifier.padding(vertical = 6.dp), color = p.line)
             MenuRow(R.drawable.ic_close, stringResource(R.string.exit), "") { onExit() }
         }
@@ -367,6 +376,32 @@ private fun SettingsDialog(
                         Icon(painterResource(R.drawable.ic_link_off), null, tint = p.red, modifier = Modifier.size(20.dp))
                         Text("  " + stringResource(R.string.disconnect), color = p.red)
                     }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close), color = p.red) } },
+    )
+}
+
+@Composable
+private fun AboutDialog(onDismiss: () -> Unit) {
+    val p = LocalPalette.current
+    val uri = LocalUriHandler.current
+    val repo = "https://github.com/Ruf790/artcore-music-remote"
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = p.bg,
+        title = { Text(stringResource(R.string.about), color = p.text) },
+        text = {
+            Column {
+                Text(stringResource(R.string.app_name), color = p.text, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.version_n, BuildConfig.VERSION_NAME), color = p.text2, fontSize = 13.sp)
+                Spacer(Modifier.height(10.dp))
+                Text(stringResource(R.string.about_text), color = p.text, fontSize = 14.sp)
+                Spacer(Modifier.height(10.dp))
+                Text(stringResource(R.string.about_license), color = p.text2, fontSize = 13.sp)
+                TextButton(onClick = { uri.openUri(repo) }, modifier = Modifier.padding(top = 4.dp)) {
+                    Text(stringResource(R.string.about_source), color = p.red)
                 }
             }
         },
