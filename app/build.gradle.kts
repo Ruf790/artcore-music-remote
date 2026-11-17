@@ -3,8 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersion = "1.0.0"
-val appVersionCode = 1
+val appVersion = "1.0.1"
+val appVersionCode = 2
 
 // Release signing: the keystore comes from the repository secrets in CI (see README).
 // Without them the release APK is signed with the debug key kept in keystore/debug.keystore,

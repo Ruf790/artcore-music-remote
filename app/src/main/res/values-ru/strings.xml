@@ -40,6 +40,7 @@
     <string name="retry">Повторить</string>
     <string name="up_next">Далее: %s</string>
     <string name="live">Онлайн-трансляция…</string>
+    <string name="to_playing">К играющему треку</string>
     <string name="live_short">Эфир</string>
     <string name="nothing_playing">Ничего не играет</string>
     <string name="empty_playlist">Этот плейлист пуст</string>

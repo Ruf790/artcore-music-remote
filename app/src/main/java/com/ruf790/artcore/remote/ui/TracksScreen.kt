@@ -32,6 +32,9 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -60,6 +63,7 @@ import com.ruf790.artcore.remote.proto.filterGroups
 import com.ruf790.artcore.remote.proto.fmtTime
 import com.ruf790.artcore.remote.proto.radioStations
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** The tab that gathers the radio stations of every playlist (menu → Radio). */
 const val RADIO_TAB = -1
@@ -143,6 +147,30 @@ fun TracksScreen(
         SearchField(query, onQuery, focusSearch)
         val list = remember(model.playlists, tab, query) { rows(model, tab, query) }
         val state = rememberLazyListState()
+        val scope = rememberCoroutineScope()
+        // 1.0.1: the list opens on the track that is playing, not at the top
+        val playingId = st.track?.id.takeIf { st.status != Status.STOP }
+        val playingIdx = remember(list, playingId) {
+            if (playingId == null) -1 else list.indexOfFirst { it is Row_.Item && it.track.id == playingId }
+        }
+        val target = { i: Int -> (i - 2).coerceAtLeast(0) }       // two rows of context above it
+        // opening the screen, another tab, the search cleared, the list arriving: jump to it
+        LaunchedEffect(tab, query.isEmpty(), playingIdx >= 0) {
+            if (query.isEmpty() && playingIdx >= 0) state.scrollToItem(target(playingIdx))
+        }
+        // the next track starts: follow it, but only if the one before was on the screen
+        var lastIdx by remember { mutableIntStateOf(-1) }
+        LaunchedEffect(playingIdx) {
+            val prev = lastIdx
+            lastIdx = playingIdx
+            if (playingIdx < 0 || prev < 0 || prev == playingIdx) return@LaunchedEffect
+            if (state.layoutInfo.visibleItemsInfo.any { it.index == prev }) {
+                state.animateScrollToItem(target(playingIdx))
+            }
+        }
+        val playingHidden by remember(playingIdx) {
+            derivedStateOf { playingIdx >= 0 && state.layoutInfo.visibleItemsInfo.none { it.index == playingIdx } }
+        }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (list.isEmpty()) {
                 val msg = when {
@@ -162,6 +190,13 @@ fun TracksScreen(
                             playing = st.track?.id == r.track.id && st.status != Status.STOP,
                             paused = st.status == Status.PAUSE) { actions.play(r.playlist, r.track.id) }
                     }
+                }
+            }
+            // scrolled away from it: a button back to the playing track
+            if (playingHidden) {
+                RoundButton(R.drawable.ic_note, stringResource(R.string.to_playing), 48.dp, p.red, Color.White, 22.dp,
+                    Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                    scope.launch { state.animateScrollToItem(target(playingIdx)) }
                 }
             }
         }
