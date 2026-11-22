@@ -237,13 +237,9 @@ class MainActivity : ComponentActivity() {
             r.quit()
             finishAndRemoveTask()
         }
-        val more = listOf(
-            stringResource(R.string.choose_pc) to { page = Page.CONNECT },
-            stringResource(R.string.desk_mode) to { desk = true },
-            stringResource(R.string.settings) to { settings = true },
-            stringResource(R.string.about) to { about = true },
-            stringResource(R.string.exit) to exit,
-        )
+        // 1.2.1: no ⋮ menu — it only repeated the ☰ menu (choose PC, panel mode, settings, about, exit).
+        // An empty list hides the ⋮ button on every screen (Overflow draws nothing for it).
+        val more = emptyList<Pair<String, () -> Unit>>()
 
         Box(Modifier.fillMaxSize()) {
         ModalNavigationDrawer(drawerState = drawer, gesturesEnabled = !desk, drawerContent = {
